@@ -1,9 +1,11 @@
 import { Router } from "express";
+import passport from "passport";
 import {
   assignRole,
   changeCurrentPassword,
   forgetPasswordRequest,
   getCurrentUser,
+  handleSocialLogin,
   login,
   logout,
   refreshAccessToken,
@@ -24,7 +26,8 @@ import { validate } from "../validators/validate.js";
 import { verifyJWT, verifyPermission } from "../middleware/auth.middleware.js";
 import { UserRolesEnum } from "../utils/Constants.js";
 import { mongodIdPathVariableValidator } from "../validators/common/mongodb.validators.js";
-
+//import passport config
+import "../passport/index.js";
 const router = Router();
 
 router.route("/signup").post(userRegisterValidator(), validate, signup);
@@ -61,17 +64,42 @@ router
     changeCurrentPassword
   );
 
-router
-  .route("/assign-role/:userId")
-  .post(
-    verifyJWT,
-    // verifyPermission([UserRolesEnum.ADMIN]),
-    mongodIdPathVariableValidator("userId"),
-    userAssignRoleValidator(),
-    validate,
-    assignRole
-  );
+router.route("/assign-role/:userId").post(
+  verifyJWT,
+  // verifyPermission([UserRolesEnum.ADMIN]),
+  mongodIdPathVariableValidator("userId"),
+  userAssignRoleValidator(),
+  validate,
+  assignRole
+);
 
 router.route("/current-user").get(verifyJWT, getCurrentUser);
+
+// SSO routes
+router.route("/google").get(
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  }),
+  (req, res) => {
+    res.send("redirecting to google...");
+  }
+);
+
+router.route("/github").get(
+  passport.authenticate("github", {
+    scope: ["profile", "email"],
+  }),
+  (req, res) => {
+    res.send("redirecting to github...");
+  }
+);
+
+router
+  .route("/google/callback")
+  .get(passport.authenticate("google"), handleSocialLogin);
+
+router
+  .route("/github/callback")
+  .get(passport.authenticate("github"), handleSocialLogin);
 
 export default router;

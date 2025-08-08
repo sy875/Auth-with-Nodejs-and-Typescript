@@ -1,11 +1,15 @@
 import { Model, model, Schema } from "mongoose";
-import { AvailableUserRoles, UserRolesEnum } from "../utils/Constants";
+import { AvailableSocialLogins, AvailableUserRoles, UserLoginType, UserRolesEnum } from "../utils/Constants";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { IUser, IUserMethods } from "../types/user";
 
-const userSchema = new Schema<IUser,Model<IUser,{},IUserMethods>,IUserMethods>(
+const userSchema = new Schema<
+  IUser,
+  Model<IUser, {}, IUserMethods>,
+  IUserMethods
+>(
   {
     avatar: {
       type: {
@@ -57,8 +61,13 @@ const userSchema = new Schema<IUser,Model<IUser,{},IUserMethods>,IUserMethods>(
     role: {
       type: String,
       enum: AvailableUserRoles,
-      default: UserRolesEnum.User,
+      default: UserRolesEnum.USER,
       required: true,
+    },
+    loginType: {
+      type: String,
+      enum: AvailableSocialLogins,
+      default: UserLoginType.EMAIL_PASSWORD,
     },
   },
   { timestamps: true }
@@ -113,4 +122,7 @@ userSchema.methods.generateTemporaryToken = function () {
   return { unHashedToken, hashedToken, tokenExpiry };
 };
 
-export const User = model<IUser, Model<IUser, {}, IUserMethods>>("User", userSchema);
+export const User = model<IUser, Model<IUser, {}, IUserMethods>>(
+  "User",
+  userSchema
+);
