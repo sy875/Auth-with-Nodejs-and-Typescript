@@ -3,13 +3,14 @@ import cors from "cors";
 import connectDb from "./db";
 import dotenv from "dotenv";
 import morgan from "morgan";
-// import cookie from "cookie-parser"
+import cookieParser from "cookie-parser"
 const app = express();
 
 dotenv.config();
 
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(cookieParser())
 
 app.use(
   cors({
